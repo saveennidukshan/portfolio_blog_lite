@@ -1,0 +1,84 @@
+<%- include('partials/header') %>
+
+<div class="showcase-container">
+
+  <!-- Minimalist Blog Search & Filter Header -->
+  <header class="showcase-header">
+    <!-- Search & Filter Bar -->
+    <div class="showcase-toolbar">
+      <div class="showcase-search">
+        <svg class="search-svg" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" class="showcase-search-input" placeholder="Search articles by title or keyword..." autocomplete="off" aria-label="Search articles" />
+        <kbd class="showcase-kbd" title="Press / to focus">/</kbd>
+        <button type="button" id="clearSearch" class="search-clear-btn" style="display: none;" aria-label="Clear search">&times;</button>
+      </div>
+
+      <% if (tags && tags.length > 0) { %>
+        <div class="showcase-tags">
+          <button type="button" class="tag-pill active" data-tag="all">All</button>
+          <% tags.forEach(tag => { %>
+            <button type="button" class="tag-pill" data-tag="<%= tag.toLowerCase() %>">#<%= tag %></button>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </header>
+
+  <% if (posts.length === 0) { %>
+    <div class="empty-feed">
+      <p>No articles published yet. Check back soon!</p>
+    </div>
+  <% } else { %>
+
+    <!-- Modern Responsive Articles Grid -->
+    <div class="blog-grid" id="postsStream">
+      <% posts.forEach(post => { %>
+        <a href="/blog/<%= post.slug %>" class="grid-card post-card" data-title="<%= post.title.toLowerCase() %>" data-excerpt="<%= (post.excerpt || '').toLowerCase() %>" data-tags="<%= (post.tags || '').toLowerCase() %>">
+          <div class="grid-card-body">
+            <div class="grid-card-header">
+              <div class="card-tags">
+                <% if (post.tagList && post.tagList.length > 0) { %>
+                  <% post.tagList.slice(0, 2).forEach(t => { %>
+                    <span class="tag-badge">#<%= t %></span>
+                  <% }); %>
+                  <% if (post.tagList.length > 2) { %>
+                    <span class="tag-more">+<%= post.tagList.length - 2 %></span>
+                  <% } %>
+                <% } %>
+              </div>
+              <span class="grid-reading-time"><%= post.reading_time || '3 min read' %></span>
+            </div>
+
+            <h3 class="grid-card-title"><%= post.title %></h3>
+
+            <% if (post.excerpt) { %>
+              <p class="grid-card-excerpt"><%= post.excerpt %></p>
+            <% } %>
+
+            <div class="grid-card-footer">
+              <time datetime="<%= post.created_at %>" class="grid-date">
+                <%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+              </time>
+              <span class="grid-read-more">
+                <span>Read</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+
+  <% } %>
+
+  <!-- Search No Results State -->
+  <div id="noResults" class="no-results" style="display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="no-results-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="m8 11 6 0"/></svg>
+    <p class="no-results-title">No matching articles found</p>
+    <p class="no-results-sub">Try searching with a different keyword or resetting your filter.</p>
+    <button type="button" id="resetFilterBtn" class="btn btn-sm btn-outline">Reset search filter</button>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>

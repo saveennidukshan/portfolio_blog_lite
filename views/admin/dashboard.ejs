@@ -1,0 +1,169 @@
+<%- include('../partials/admin-header', { currentTab: 'dashboard' }) %>
+
+<div class="admin-dashboard-container">
+
+  <!-- Dashboard Top Bar -->
+  <div class="dashboard-head">
+    <div>
+      <h1 class="dashboard-title">Articles &amp; Content</h1>
+      <p class="dashboard-subtitle">Manage, write, and publish articles for your personal blog</p>
+    </div>
+
+    <div class="dashboard-actions">
+      <a href="/admin/posts/new" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Write New Article
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Overview Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Articles</div>
+      <div class="stat-value"><%= stats.total %></div>
+      <div class="stat-hint">All articles in database</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Published Live</div>
+      <div class="stat-value stat-value-success"><%= stats.published %></div>
+      <div class="stat-hint">Visible to readers on root feed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Drafts</div>
+      <div class="stat-value stat-value-warning"><%= stats.drafts %></div>
+      <div class="stat-hint">Private, work in progress</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Words</div>
+      <div class="stat-value"><%= stats.words.toLocaleString() %></div>
+      <div class="stat-hint">Calculated across all articles</div>
+    </div>
+  </div>
+
+  <!-- Table Filter & Search Controls -->
+  <div class="table-controls">
+    <div class="filter-tabs">
+      <button type="button" class="admin-tab-btn active" data-filter="all">All (<%= stats.total %>)</button>
+      <button type="button" class="admin-tab-btn" data-filter="published">Published (<%= stats.published %>)</button>
+      <button type="button" class="admin-tab-btn" data-filter="draft">Drafts (<%= stats.drafts %>)</button>
+    </div>
+
+    <div class="admin-search-wrap">
+      <svg class="admin-search-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="adminSearchInput" class="admin-search-input" placeholder="Filter articles by title or tag..." autocomplete="off">
+    </div>
+  </div>
+
+  <!-- Articles Table Card -->
+  <div class="admin-card">
+    <% if (posts.length === 0) { %>
+      <div class="admin-empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <h3>No articles yet</h3>
+        <p>Get started by drafting your very first article.</p>
+        <a href="/admin/posts/new" class="btn btn-primary btn-sm">Write an article</a>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="min-width: 280px;">Article Title</th>
+              <th>Status</th>
+              <th>Tags</th>
+              <th>Reading Time</th>
+              <th>Date</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminPostsTableBody">
+            <% posts.forEach(post => { %>
+              <tr class="post-row" data-title="<%= post.title.toLowerCase() %>" data-tags="<%= (post.tags || '').toLowerCase() %>" data-status="<%= post.published === 1 ? 'published' : 'draft' %>">
+                <td>
+                  <div class="table-article-info">
+                    <a href="/admin/posts/<%= post.id %>/edit" class="table-article-title">
+                      <%= post.title %>
+                    </a>
+                    <span class="table-article-slug">/blog/<%= post.slug %></span>
+                  </div>
+                </td>
+                <td>
+                  <form action="/admin/posts/<%= post.id %>/toggle-publish" method="POST" style="display: inline;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" class="status-badge-btn <%= post.published === 1 ? 'badge-published' : 'badge-draft' %>" title="Click to toggle status">
+                      <span class="status-badge-dot"></span>
+                      <%= post.published === 1 ? 'Published' : 'Draft' %>
+                    </button>
+                  </form>
+                </td>
+                <td>
+                  <div class="table-tags">
+                    <% if (post.tagList && post.tagList.length > 0) { %>
+                      <% post.tagList.slice(0, 2).forEach(t => { %>
+                        <span class="table-tag">#<%= t %></span>
+                      <% }); %>
+                      <% if (post.tagList.length > 2) { %>
+                        <span class="table-tag-more">+<%= post.tagList.length - 2 %></span>
+                      <% } %>
+                    <% } else { %>
+                      <span class="table-no-tags">&mdash;</span>
+                    <% } %>
+                  </div>
+                </td>
+                <td>
+                  <span class="table-reading-time"><%= post.reading_time || '3 min' %></span>
+                </td>
+                <td>
+                  <span class="table-date">
+                    <%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                  </span>
+                </td>
+                <td>
+                  <div class="table-action-btns">
+                    <a href="/blog/<%= post.slug %>" target="_blank" rel="noopener noreferrer" class="action-btn view-btn" title="View live article">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </a>
+                    <a href="/admin/posts/<%= post.id %>/edit" class="action-btn edit-btn" title="Edit article">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </a>
+                    <button type="button" class="action-btn delete-btn btn-delete" data-id="<%= post.id %>" data-title="<%= post.title %>" title="Delete article">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="admin-modal" style="display: none;">
+  <div class="admin-modal-backdrop" onclick="closeDeleteModal()"></div>
+  <div class="admin-modal-dialog">
+    <div class="admin-modal-header">
+      <div class="modal-warning-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 class="modal-title">Delete Article</h3>
+    </div>
+    <div class="admin-modal-body">
+      <p>Are you sure you want to permanently delete <strong id="deletePostTitle">this article</strong>?</p>
+      <p class="modal-danger-note">This action cannot be undone.</p>
+    </div>
+    <div class="admin-modal-footer">
+      <button type="button" class="btn btn-outline btn-sm" onclick="closeDeleteModal()">Cancel</button>
+      <form id="deleteForm" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-danger btn-sm">Permanently Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/admin-footer') %>

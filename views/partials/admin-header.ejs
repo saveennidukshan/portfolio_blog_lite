@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Admin Portal — Blog Management' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- Admin Navigation Bar -->
+  <header class="admin-navbar">
+    <div class="admin-nav-inner">
+      <div class="admin-nav-brand">
+        <a href="/admin" class="admin-brand-link">
+          <span class="admin-brand-badge">Admin</span>
+          <span class="admin-brand-title">Blog Management</span>
+        </a>
+      </div>
+
+      <nav class="admin-nav-actions">
+        <a href="/admin" class="admin-nav-btn <%= (typeof currentTab !== 'undefined' && currentTab === 'dashboard') ? 'active' : '' %>">Dashboard</a>
+        <a href="/admin/posts/new" class="admin-nav-btn <%= (typeof currentTab !== 'undefined' && currentTab === 'new') ? 'active' : '' %>">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Write Article
+        </a>
+        <a href="/" target="_blank" rel="noopener noreferrer" class="admin-nav-btn admin-view-site" title="View public blog in new tab">
+          View Blog
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+
+        <div class="admin-user-pill">
+          <span class="user-status-dot"></span>
+          <span class="user-name"><%= (typeof adminUser !== 'undefined' && adminUser) ? adminUser.username : 'admin' %></span>
+        </div>
+
+        <form action="/admin/logout" method="POST" class="logout-form">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <button type="submit" class="admin-logout-btn" title="Sign out of admin portal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </button>
+        </form>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Flash Notifications -->
+  <% if (typeof adminSuccess !== 'undefined' && adminSuccess) { %>
+    <div class="admin-toast toast-success" id="adminToast">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span><%= adminSuccess %></span>
+      <button type="button" class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+  <% } %>
+
+  <% if (typeof adminError !== 'undefined' && adminError) { %>
+    <div class="admin-toast toast-error" id="adminToast">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span><%= adminError %></span>
+      <button type="button" class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+  <% } %>
+
+  <main class="admin-main">
